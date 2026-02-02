@@ -1,0 +1,48 @@
+name: SearchOps Demo CI/CD
+
+on:
+  push:
+    branches:
+      - main
+
+env:
+  IMAGE_NAME: saxenad592/searchops-demo
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set image tag
+        run: echo "TAG=${GITHUB_SHA::7}" >> $GITHUB_ENV
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        run: |
+          echo "${{ secrets.DOCKER_PASSWORD }}" | docker login \
+            -u "${{ secrets.DOCKER_USERNAME }}" --password-stdin
+
+      - name: Build image
+        run: docker build -t $IMAGE_NAME:$TAG .
+
+      - name: Push image
+        run: docker push $IMAGE_NAME:$TAG
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v4
+
+      - name: Configure kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBECONFIG_DATA }}" > ~/.kube/config
+
+      - name: Deploy to Kubernetes
+        run: |
+          kubectl set image deploy/searchops-demo \
+            app=$IMAGE_NAME:$TAG
+
