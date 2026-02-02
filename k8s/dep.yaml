@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: searchops-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: searchops-demo
+  template:
+    metadata:
+      labels:
+        app: searchops-demo
+    spec:
+      containers:
+        - name: app
+          image: saxenad592/searchops-demo:1.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8000
+
