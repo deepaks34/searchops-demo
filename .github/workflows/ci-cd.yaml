@@ -42,8 +42,3 @@ jobs:
           echo "${{ secrets.KUBECONFIG_DATA }}" | base64 --decode > ~/.kube/config
 
 
-      - name: Deploy to Kubernetes
-        run: |
-          kubectl set image deploy/searchops-demo \
-            app=$IMAGE_NAME:$TAG
-
